@@ -1,0 +1,4 @@
+Flask
+geospatial
+osgeo
+botocore == 1.34.142

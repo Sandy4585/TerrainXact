@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TerrainXact</title>
+    <link href="https://fonts.googleapis.com/css2?family=Avenir+Next+LT+Pro:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Avenir Next LT Pro', sans-serif;
+            background-size: cover;
+            background-repeat: no-repeat;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f0f8ff; /* Light blue background */
+        }
+        .navbar {
+            background-color: #00B0F0; /* Blue background */
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white; /* White text */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            position: relative; /* To position the title absolutely */
+        }
+        .title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 30px;
+            margin: 0;
+            color: whitesmoke;
+        }
+        .container {
+            width: 60%; /* Use 90% of the available width */
+            max-width: 700px; /* Ensure it doesn't exceed 1200px */
+            margin: auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white background */
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            margin-top: 13vh;
+            position: relative;
+        }
+        h1 {
+            text-align: center;
+            color: #00B0F0; /* Blue text */
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white background */
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        label {
+            color: rgb(26, 142, 205); /* Black text */
+            font-weight: bold;
+        }
+        input[type=file] {
+            padding: 10px;
+            border: 1px solid #cccccc; /* Light gray border */
+            border-radius: 5px;
+            width: 100%;
+            background-color: #ffffff; /* White background */
+        }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Two columns */
+            gap: 5px;
+        }
+        .checkbox-group div {
+            display: flex;
+            align-items: center;
+        }
+        .checkbox-group input[type=checkbox] {
+            margin-right: 5px;
+        }
+        button[type=submit] {
+            padding: 10px 20px;
+            background-color: #00B0F0; /* Blue button background */
+            color: #ffffff; /* White text */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button[type=submit]:hover {
+            background-color: #008CBA;
+        }
+        .footer {
+            margin-top: auto;
+            text-align: center;
+            padding: 10px;
+            background-color: #00B0F0; /* Blue background */
+            color: white; /* White text */
+            font-size: 14px;
+        }
+        .logo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .logo img {
+            width: 150px;
+            height: auto;
+        }
+        .progress {
+            display: none;
+            margin-top: 20px;
+            height: 20px;
+            background-color: #f3f3f3;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background-color: #4caf50;
+            text-align: center;
+            color: #ffffff;
+            white-space: nowrap;
+            transition: width 0.4s ease;
+        }
+        .message {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .file-success {
+            color: green;
+            margin-left: 10px;
+        }
+        .slideshow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .slideshow img {
+            width: 100%;
+            height: 100%;
+            object-fit: 90%;
+            position: absolute;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .slideshow img.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="slideshow">
+        <img src="{{ url_for('static', filename='images/Background image.jpg') }}" class="active">
+        <img src="{{ url_for('static', filename='images/ai-1.png') }}">
+        <img src="{{ url_for('static', filename='images/tea-2.png') }}">
+        <img src="{{ url_for('static', filename='images/final-image.png') }}">
+        <img src="{{ url_for('static', filename='images/solarpanels.jpg') }}">
+        <img src="{{ url_for('static', filename='images/tea.png') }}">
+        <img src="{{ url_for('static', filename='images/terrain_background.png') }}">
+    </div>
+    <div class="navbar">
+        <h1 class="title">TerrainXact</h1>
+        <div class="logo">
+            <img src="{{ url_for('static', filename='images/CIR.jpg') }}" alt="CIR Logo">
+        </div>
+    </div>
+    <div class="container">
+        <h1>Upload Your Files</h1>
+        <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="dem_file">Upload DEM (Raster) File:</label>
+                <input type="file" id="dem_file" name="dem_file" accept=".tif,.tiff">
+                <span class="file-success" id="dem_file_success"></span>
+            </div>
+            <div class="form-group">
+                <label for="kml_file">Upload KML File:</label>
+                <input type="file" id="kml_file" name="kml_file" accept=".kml">
+                <span class="file-success" id="kml_file_success"></span>
+            </div>
+            <div class="form-group">
+                <label>Select Processing Tasks:</label>
+                <div class="checkbox-group">
+                    <div>
+                        <input type="checkbox" id="clipped_dem" name="output_options" value="clipped_dem">
+                        <label for="clipped_dem">Clipped DEM (meters)</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="clipped_dem_feet" name="output_options" value="clipped_dem_feet">
+                        <label for="clipped_dem_feet">Clipped DEM (feet)</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="contours_shp" name="output_options" value="contours_shp">
+                        <label for="contours_shp">Contours (Shapefile)</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="contours_dxf" name="output_options" value="contours_dxf">
+                        <label for="contours_dxf">Contours (DXF)</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="pvsyst_csv" name="output_options" value="pvsyst_csv">
+                        <label for="pvsyst_csv">PVSyst Input (CSV)</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="points_dxf_meters" name="output_options" value="points_dxf_meters">
+                        <label for="points_dxf_meters">3D Points (DXF, meters)</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="points_dxf_feet" name="output_options" value="points_dxf_feet">
+                        <label for="points_dxf_feet">3D Points (DXF, feet)</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="mesh_dxf" name="output_options" value="mesh_dxf">
+                        <label for="mesh_dxf">Generated Mesh (DXF, feet)</label>
+                    </div>
+                </div>
+            </div>
+            <button type="submit">Process Files</button>
+        </form>
+        <div class="progress">
+            <div class="progress-bar" id="progress-bar">Bringing the terrain to you...</div>
+        </div>
+        <div class="message" id="message"></div>
+    </div>
+    <div class="footer">
+        &copy; 2024 TerrainXact. All rights reserved.
+    </div>
+    <script>
+        document.getElementById('dem_file').addEventListener('change', function() {
+            var demFileName = this.files[0].name;
+            document.getElementById('dem_file_success').textContent = demFileName + " - successfully uploaded";
+        });
+
+        document.getElementById('kml_file').addEventListener('change', function() {
+            var kmlFileName = this.files[0].name;
+            document.getElementById('kml_file_success').textContent = kmlFileName + " - successfully uploaded";
+        });
+
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            var xhr = new XMLHttpRequest();
+            var progressBar = document.getElementById('progress-bar');
+            var progressContainer = document.querySelector('.progress');
+            var message = document.getElementById('message');
+
+            xhr.open('POST', '/upload', true);
+            xhr.responseType = 'blob';  // Ensure the response is handled as a blob
+
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    var percentComplete = (e.loaded / e.total) * 100;
+                    progressBar.style.width = percentComplete + '%';
+                    if (percentComplete < 100) {
+                        progressContainer.style.display = 'block';
+                    }
+                }
+            });
+
+            xhr.addEventListener('load', function() {
+                if (xhr.status === 200) {
+                    message.textContent = 'Files processed successfully!';
+                    message.style.color = 'green';
+                    // Trigger file download with KML file name
+                    var blob = xhr.response;
+                    var kmlFileName = document.getElementById('kml_file').files[0].name;
+                    var zipFileName = kmlFileName.substring(0, kmlFileName.lastIndexOf('.')) + '.zip';
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = zipFileName;
+                    link.click();
+                } else {
+                    message.textContent = 'Error processing files.';
+                    message.style.color = 'red';
+                }
+                progressContainer.style.display = 'none';
+            });
+
+            xhr.send(formData);
+        });
+
+        var slideIndex = 0;
+        var slides = document.querySelectorAll('.slideshow img');
+        function showSlides() {
+            slides[slideIndex].classList.remove('active');
+            slideIndex = (slideIndex + 1) % slides.length;
+            slides[slideIndex].classList.add('active');
+            setTimeout(showSlides, 5000); // Change image every 5 seconds
+        }
+        showSlides();
+    </script>
+</body>
+</html>

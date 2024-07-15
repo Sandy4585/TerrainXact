@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Terrain Data Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Avenir+Next+LT+Pro:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Avenir Next LT Pro', sans-serif;
+            background-size: cover;
+            background-repeat: no-repeat;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f0f8ff; /* Light blue background */
+        }
+        .header {
+            background-color: #00B0F0; /* Blue background */
+            padding: 10px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            color: white; /* White text */
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white background */
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            margin-top: 10vh;
+            position: relative;
+        }
+        h1 {
+            text-align: center;
+            color: #00B0F0; /* Blue text */
+        }
+        form {
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white background */
+            padding: 20px;
+            border-radius: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #000000; /* Black text */
+            font-weight: bold;
+        }
+        input[type=file] {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #cccccc; /* Light gray border */
+            border-radius: 5px;
+            width: 100%;
+            background-color: #ffffff; /* White background */
+        }
+        button[type=submit] {
+            padding: 10px 20px;
+            background-color: #00B0F0; /* Blue button background */
+            color: #ffffff; /* White text */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button[type=submit]:hover {
+            background-color: #008CBA;
+        }
+        .footer {
+            margin-top: auto;
+            text-align: center;
+            padding: 10px;
+            background-color: #00B0F0; /* Blue background */
+            color: white; /* White text */
+            font-size: 14px;
+        }
+        .logo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .logo img {
+            width: 150px;
+            height: auto;
+        }
+        .progress {
+            display: none;
+            margin-top: 20px;
+            height: 20px;
+            background-color: #f3f3f3;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background-color: #4caf50;
+            text-align: center;
+            color: #ffffff;
+            white-space: nowrap;
+            transition: width 0.4s ease;
+        }
+        .message {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .file-success {
+            color: green;
+            margin-left: 10px;
+        }
+        .slideshow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .slideshow img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .slideshow img.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="slideshow">
+        <img src="{{ url_for('static', filename='images/Background image.jpg') }}" class="active">
+        <img src="{{ url_for('static', filename='images/final-image.png') }}">
+        <img src="{{ url_for('static', filename='images/solarpanels.jpg') }}">
+        <img src="{{ url_for('static', filename='images/terrain_background.png') }}">
+    </div>
+    <div class="header">
+        Terrain Data Generator
+    </div>
+    <div class="container">
+        <h1>Upload Your Files</h1>
+        <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+            <label for="dem_file">Upload DEM (Raster) File:</label>
+            <input type="file" id="dem_file" name="dem_file" accept=".tif,.tiff">
+            <span class="file-success" id="dem_file_success"></span><br>
+            
+            <label for="kml_file">Upload KML File:</label>
+            <input type="file" id="kml_file" name="kml_file" accept=".kml">
+            <span class="file-success" id="kml_file_success"></span><br>
+
+            <button type="submit">Process Files</button>
+        </form>
+        <div class="progress">
+            <div class="progress-bar" id="progress-bar">Bringing the terrain to you...</div>
+        </div>
+        <div class="message" id="message"></div>
+    </div>
+    <div class="footer">
+        &copy; 2024 Terrain Data Generator. All rights reserved.
+    </div>
+    <div class="logo">
+        <img src="{{ url_for('static', filename='images/CIR.jpg') }}" alt="CIR Logo">
+    </div>
+    <script>
+        document.getElementById('dem_file').addEventListener('change', function() {
+            var demFileName = this.files[0].name;
+            document.getElementById('dem_file_success').textContent = demFileName + " - successfully uploaded";
+        });
+
+        document.getElementById('kml_file').addEventListener('change', function() {
+            var kmlFileName = this.files[0].name;
+            document.getElementById('kml_file_success').textContent = kmlFileName + " - successfully uploaded";
+        });
+
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            var xhr = new XMLHttpRequest();
+            var progressBar = document.getElementById('progress-bar');
+            var progressContainer = document.querySelector('.progress');
+            var message = document.getElementById('message');
+
+            xhr.open('POST', '/upload', true);
+
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    var percentComplete = (e.loaded / e.total) * 100;
+                    progressBar.style.width = percentComplete + '%';
+                    if (percentComplete < 100) {
+                        progressContainer.style.display = 'block';
+                    }
+                }
+            });
+
+            xhr.addEventListener('load', function() {
+                if (xhr.status === 200) {
+                    message.textContent = 'Files processed successfully!';
+                    message.style.color = 'green';
+                    // Trigger file download
+                    var blob = new Blob([xhr.response], { type: 'application/zip' });
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = 'output.zip';
+                    link.click();
+                } else {
+                    message.textContent = 'Error processing files.';
+                    message.style.color = 'red';
+                }
+                progressContainer.style.display = 'none';
+            });
+
+            xhr.send(formData);
+        });
+
+        var slideIndex = 0;
+        var slides = document.querySelectorAll('.slideshow img');
+        function showSlides() {
+            slides[slideIndex].classList.remove('active');
+            slideIndex = (slideIndex + 1) % slides.length;
+            slides[slideIndex].classList.add('active');
+            setTimeout(showSlides, 5000); // Change image every 5 seconds
+        }
+        showSlides();
+    </script>
+</body>
+</html>
